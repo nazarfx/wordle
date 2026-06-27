@@ -15,7 +15,7 @@ const io = new Server(server, {
     }
 });
 
-const { WORDLE_SECRET_WORDS } = require('./server_words.js');
+const { WORDLE_SECRET_WORDS } = require('./words.js');
 
 const rooms = {};
 

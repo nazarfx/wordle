@@ -126,15 +126,23 @@ try {
 
     console.log('Шаг 2: Кросс-чекинг с ультимативной базой из 1000 существительных...');
 
-    const finalSecretWords = FINAL_1000_WORDS.map(w => w.toLowerCase().replace(/ё/g, 'е')).filter(w => {
-        return all5LetterWords.some(orig => orig.replace(/ё/g, 'е') === w);
-    });
+    const finalSecretWords = FINAL_1000_WORDS
+        .map(w => w.toLowerCase().replace(/ё/g, 'е'))
+        .filter(w => w.length === 5)
+        .filter(w => {
+            return all5LetterWords.some(orig => orig.replace(/ё/g, 'е') === w);
+        });
 
     const fileContent = `// Все слова для проверки ввода (26490 слов)
 const WORDLE_DICTIONARY = ${JSON.stringify(all5LetterWords, null, 2)};
 
-// Мощная база из чистых пятибуквенных существительных для загадывания
-const WORDLE_SECRET_WORDS = ${JSON.stringify(finalSecretWords, null, 2)};
+// Теперь сервер будет выбирать из ВСЕХ пятибуквенных слов, что есть в файле russian.txt
+const WORDLE_SECRET_WORDS = ${JSON.stringify(all5LetterWords, null, 2)};
+
+// Экспорт для Node.js бэкенда, чтобы сервер видел этот массив
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { WORDLE_SECRET_WORDS };
+}
 `;
 
     fs.writeFileSync(outputPath, fileContent, 'utf-8');

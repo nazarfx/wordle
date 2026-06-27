@@ -17,7 +17,6 @@ const KEYBOARD_LAYOUT = [
     ["enter", "я", "ч", "с", "м", "и", "т", "ь", "б", "ю", "back"]
 ];
 
-// --- ЛОГИКА ЛОББИ (МУЛЬТИПЛЕЕР) ---
 document.getElementById('create-room-btn').addEventListener('click', () => {
     socket.emit('createRoom');
 });
@@ -47,7 +46,6 @@ socket.on('error', (msg) => {
     showMessage(msg);
 });
 
-// --- ТЕМА ---
 if (localStorage.getItem("theme") === "light") {
     document.body.classList.add("light-mode");
     themeToggle.textContent = "🌙";
@@ -163,7 +161,6 @@ function checkRow() {
         return;
     }
     const guess = guesses[currentRow].join("");
-    // Отправляем слово на сервер бэкенда для проверки
     socket.emit('submitGuess', { roomId: currentRoomId, guess });
 }
 
@@ -213,7 +210,6 @@ function updateOpponentsBoards(players) {
     container.innerHTML = ""; // Очищаем старые мини-сетки
 
     for (const id in players) {
-        // Мы не рисуем собственное поле в блоке противников
         if (id === socket.id) continue;
 
         const player = players[id];
