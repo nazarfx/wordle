@@ -18,7 +18,6 @@ const KEYBOARD_LAYOUT = [
 ];
 
 document.getElementById('create-room-btn').addEventListener('click', () => {
-    // Берём простое слово для загадывания из WORDLE_SECRET_WORDS
     const randomSecretWord = WORDLE_SECRET_WORDS[Math.floor(Math.random() * WORDLE_SECRET_WORDS.length)];
     socket.emit('createRoom', { secretWord: randomSecretWord });
 });
@@ -49,16 +48,29 @@ socket.on('gameRestarted', () => {
     showMessage("Игра перезапущена! Новое слово загадано.", 3000);
 });
 
-if (typeof WORDLE_SECRET_WORDS !== 'undefined' && WORDLE_SECRET_WORDS.length > 0) {
-    const firstWord = WORDLE_SECRET_WORDS[Math.floor(Math.random() * WORDLE_SECRET_WORDS.length)];
-    socket.emit('createRoom', { secretWord: firstWord });
-} else {
-    socket.emit('createRoom');
-}
+window.onload = () => {
+    if (typeof WORDLE_SECRET_WORDS !== 'undefined' && WORDLE_SECRET_WORDS.length > 0) {
+        const firstWord = WORDLE_SECRET_WORDS[Math.floor(Math.random() * WORDLE_SECRET_WORDS.length)];
+        socket.emit('createRoom', { secretWord: firstWord });
+    } else {
+        socket.emit('createRoom');
+    }
+};
 
 socket.on('error', (msg) => {
     showMessage(msg);
 });
+
+// if (typeof WORDLE_SECRET_WORDS !== 'undefined' && WORDLE_SECRET_WORDS.length > 0) {
+//     const firstWord = WORDLE_SECRET_WORDS[Math.floor(Math.random() * WORDLE_SECRET_WORDS.length)];
+//     socket.emit('createRoom', { secretWord: firstWord });
+// } else {
+//     socket.emit('createRoom');
+// }
+//
+// socket.on('error', (msg) => {
+//     showMessage(msg);
+// });
 
 if (localStorage.getItem("theme") === "light") {
     document.body.classList.add("light-mode");
@@ -177,18 +189,85 @@ function checkRow() {
 
     const guess = guesses[currentRow].join("").toLowerCase();
 
-    if (!WORDLE_DICTIONARY.includes(guess)) {
+    if (typeof WORDLE_DICTIONARY === 'undefined' || !WORDLE_DICTIONARY.includes(guess)) {
         showMessage("Такого слова нет в словаре");
         const rowEl = document.querySelectorAll('.row')[currentRow];
         if (rowEl) {
             rowEl.classList.add('shake');
             setTimeout(() => rowEl.classList.remove('shake'), 500);
         }
+
+        for (let j = 0; j < WORD_LENGTH; j++) {
+            guesses[currentRow][j] = "";
+            const tile = document.getElementById(`tile-${currentRow}-${j}`);
+            if (tile) {
+                tile.textContent = "";
+                tile.removeAttribute("data-state");
+            }
+        }
+        currentTile = 0;
         return;
     }
 
     socket.emit('submitGuess', { roomId: currentRoomId, guess });
 }
+
+// function handleKeyPress(key) {
+//     if (gameOver) return;
+//
+//     if (key === "back") {
+//         if (currentTile > 0) {
+//             currentTile--;
+//             guesses[currentRow][currentTile] = "";
+//             const tile = document.getElementById(`tile-${currentRow}-${currentTile}`);
+//             tile.textContent = "";
+//             tile.removeAttribute("data-state");
+//         }
+//     } else if (key === "enter") {
+//         if (currentTile === WORD_LENGTH) checkRow();
+//         else showMessage("Недостаточно букв");
+//     } else if (/^[а-я]$/.test(key)) {
+//         if (currentTile < WORD_LENGTH) {
+//             guesses[currentRow][currentTile] = key;
+//             const tile = document.getElementById(`tile-${currentRow}-${currentTile}`);
+//             tile.textContent = key;
+//             tile.setAttribute("data-state", "tbd");
+//             tile.classList.add('pop');
+//             setTimeout(() => tile.classList.remove('pop'), 100);
+//             currentTile++;
+//         }
+//     }
+// }
+//
+// function checkRow() {
+//     if (!currentRoomId) {
+//         showMessage("Сначала создайте комнату или войдите к другу!");
+//         return;
+//     }
+//
+//     const guess = guesses[currentRow].join("").toLowerCase();
+//
+//     if (!WORDLE_DICTIONARY.includes(guess)) {
+//         showMessage("Такого слова нет в словаре");
+//         const rowEl = document.querySelectorAll('.row')[currentRow];
+//         if (rowEl) {
+//             rowEl.classList.add('shake');
+//             setTimeout(() => rowEl.classList.remove('shake'), 500);
+//         }
+//         for (let j = 0; j < WORD_LENGTH; j++) {
+//             guesses[currentRow][j] = "";
+//             const tile = document.getElementById(`tile-${currentRow}-${j}`);
+//             if (tile) {
+//                 tile.textContent = "";
+//                 tile.removeAttribute("data-state");
+//             }
+//         }
+//         currentTile = 0;
+//         return;
+//     }
+//
+//     socket.emit('submitGuess', { roomId: currentRoomId, guess });
+// }
 
 socket.on('invalidWord', () => {
     showMessage("Такого слова нет");

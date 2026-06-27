@@ -1,5 +1,6 @@
 const express = require('express');
-const app = Webpack = express();
+const app = express();
+// const app = express(); //=Webpack
 const http = require('http');
 const server = http.createServer(app);
 const { Server } = require('socket.io');
@@ -74,8 +75,12 @@ io.on('connection', (socket) => {
             }
         }
 
+        // БЕЗОПАСНЫЙ ХАК: Если игрока почему-то нет в объекте комнаты, создаем его заново
+        if (!room.players[socket.id]) {
+            room.players[socket.id] = { id: socket.id, progress: [], currentAttempt: 0, score: 'playing' };
+        }
+
         const player = room.players[socket.id];
-        if (!player) return;
 
         player.progress.push(statuses);
         player.currentAttempt++;
@@ -95,6 +100,53 @@ io.on('connection', (socket) => {
 
         io.to(roomId).emit('roomUpdated', { roomId, players: room.players });
     });
+
+    // socket.on('submitGuess', ({ roomId, guess }) => {
+    //     const room = rooms[roomId];
+    //     if (!room) return;
+    //
+    //     const guessClean = guess.toLowerCase();
+    //     const secretLetters = room.secretWord.split("");
+    //     const guessLetters = guessClean.split("");
+    //     const statuses = Array(5).fill("absent");
+    //
+    //     for (let i = 0; i < 5; i++) {
+    //         if (guessLetters[i] === secretLetters[i]) {
+    //             statuses[i] = "correct";
+    //             secretLetters[i] = null;
+    //         }
+    //     }
+    //
+    //     for (let i = 0; i < 5; i++) {
+    //         if (statuses[i] === "correct") continue;
+    //         const index = secretLetters.indexOf(guessLetters[i]);
+    //         if (index !== -1) {
+    //             statuses[i] = "present";
+    //             secretLetters[index] = null;
+    //         }
+    //     }
+    //
+    //     const player = room.players[socket.id];
+    //     if (!player) return;
+    //
+    //     player.progress.push(statuses);
+    //     player.currentAttempt++;
+    //
+    //     if (guessClean === room.secretWord) {
+    //         player.score = 'won';
+    //     } else if (player.currentAttempt >= 6) {
+    //         player.score = 'lost';
+    //     }
+    //
+    //     socket.emit('guessResult', {
+    //         statuses,
+    //         isWon: player.score === 'won',
+    //         isLost: player.score === 'lost',
+    //         secretWord: room.secretWord
+    //     });
+    //
+    //     io.to(roomId).emit('roomUpdated', { roomId, players: room.players });
+    // });
 
     socket.on('restartGame', ({ roomId, nextWord }) => {
         const room = rooms[roomId];

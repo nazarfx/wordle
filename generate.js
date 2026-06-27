@@ -1,18 +1,11 @@
-const fs = require('fs');
+const fs = require('path') ? require('fs') : null;
 const path = require('path');
 const russianWordsPackage = require('russian-words');
 
 const outputPath = path.join(__dirname, 'words.js');
 
 try {
-    const all5LetterWords = russianWordsPackage
-        .map(word => word.trim().toLowerCase().replace(/ё/g, 'е'))
-        .filter(word => word.length === 5 && /^[а-я]+$/.test(word));
-
-    const uniqueDictionary = [...new Set(all5LetterWords)];
-
-    const pureSecretWords = [
-        "лазер", "лампа", "лапоть", "лапша", "ларец", "ласка", "ласты", "лебедь", "лента", "лепка", "лесной", "лиана", "лидер", "ликер", "лилия", "лимон", "линза", "линия", "лирик", "лиса", "листва", "листок", "лифт", "лицо",
+    const pureSecretWords = ["лазер", "лампа", "лапоть", "лапша", "ларец", "ласка", "ласты", "лебедь", "лента", "лепка", "лесной", "лиана", "лидер", "ликер", "лилия", "лимон", "линза", "линия", "лирик", "лиса", "листва", "листок", "лифт", "лицо",
         "лодка", "ложка", "лоза", "локон", "локоть", "лопата", "лопух", "лосось", "лоток", "лотос", "лужайка", "луковица", "луна", "лупа", "лучше", "лыжа", "лыжня", "лысый", "львица", "льдина", "люкс", "люстра", "лютик", "люди",
         "магия", "макет", "малыш", "маневр", "манеж", "мания", "март", "марш", "маска", "масло", "масса", "массив", "мастер", "матрица", "матрос", "матч", "мать", "мачта", "маяк", "медаль", "медведь", "медик", "мел", "мельница",
         "меню", "мера", "мерка", "место", "месть", "месяц", "метель", "метеор", "метр", "мешок", "микроб", "миля", "мина", "минус", "мир", "мираж", "миска", "миссия", "митинг", "миф", "мишень", "мода", "модель", "модный",
@@ -124,28 +117,32 @@ try {
         "фасад", "филин", "фляга", "халва", "хвоя", "хижина", "хомяк", "хурма",
         "цапля", "цевье", "чайка", "черта", "чехол", "чугун", "шалаш", "шаман",
         "шипов", "шкипер", "шорты", "шпага", "шторм", "щегол", "щепка", "юбиляр",
-        "ябеда", "ягода", "ямщик", "яства"
-    ];
-
+        "ябеда", "ягода", "ямщик", "яства"]
     const cleanSecretWords = [...new Set(
         pureSecretWords
             .map(word => word.trim().toLowerCase().replace(/ё/g, 'е'))
             .filter(word => word.length === 5 && /^[а-я]+$/.test(word))
     )];
 
-    const fileContent = `// Полный словарь для валидации (все ${uniqueDictionary.length} слов из npm)
-const WORDLE_DICTIONARY = ${JSON.stringify(uniqueDictionary)};
+    const npm5LetterWords = russianWordsPackage
+        .map(word => word.trim().toLowerCase().replace(/ё/g, 'е'))
+        .filter(word => word.length === 5 && /^[а-я]+$/.test(word));
 
-// Вручную отобранный пул простых секретных слов (${cleanSecretWords.length} шт)
+    const finalDictionary = [...new Set([...npm5LetterWords, ...cleanSecretWords])];
+
+    const fileContent = `${finalDictionary.length}
+const WORDLE_DICTIONARY = ${JSON.stringify(finalDictionary.sort())};
+
+${cleanSecretWords.length}
 const WORDLE_SECRET_WORDS = ${JSON.stringify(cleanSecretWords)};
 `;
 
     fs.writeFileSync(outputPath, fileContent, 'utf-8');
 
     console.log(`===================================`);
-    console.log(` СЛОВАРЬ ИДЕАЛЬНО ПЕРЕЗАПИСАН!`);
-    console.log(` Допущено к вводу слов: ${uniqueDictionary.length}`);
-    console.log(` Загадано вручную простых слов: ${cleanSecretWords.length}`);
+    console.log(` СЛОВАРЬ ИДЕАЛЬНО СИНХРОНИЗИРОВАН!`);
+    console.log(` Допущено к вводу слов (включая ручные): ${finalDictionary.length}`);
+    console.log(` Загадано чистых простых слов: ${cleanSecretWords.length}`);
     console.log(`===================================`);
 
 } catch (err) {
