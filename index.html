@@ -9,7 +9,6 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         body { background-color: #121213; color: white; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px; transition: background-color 0.3s; }
         
-        /* Светлая тема */
         body.light-mode { background-color: #ffffff; color: #121213; }
         body.light-mode .tile { border-color: #d3d6da; color: #121213; }
         body.light-mode .key { background-color: #d3d6da; color: #121213; }
@@ -20,14 +19,12 @@
         
         #restart-btn { display: none; background-color: #538d4e; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.9rem; }
         
-        /* Кнопка темы */
         #theme-toggle { position: absolute; right: 0; top: 0; background: none; border: none; cursor: pointer; font-size: 1.5rem; }
 
         #game-board { display: grid; grid-template-rows: repeat(6, 1fr); grid-gap: 5px; margin-bottom: 30px; width: 330px; height: 400px; }
         .row { display: grid; grid-template-columns: repeat(5, 1fr); grid-gap: 5px; }
         .tile { border: 2px solid #3a3a3c; min-width: 60px; min-height: 60px; display: flex; justify-content: center; align-items: center; font-size: 2rem; font-weight: bold; text-transform: uppercase; user-select: none; }
         
-        /* --- АНИМАЦИИ --- */
         .tile.pop { animation: pop 0.1s ease-in-out; }
         @keyframes pop { 0% { transform: scale(0.8); } 40% { transform: scale(1.1); } 100% { transform: scale(1); } }
         
@@ -37,11 +34,9 @@
         .tile.flip { animation: flip 0.6s ease-in forwards; }
         @keyframes flip { 0% { transform: rotateX(0deg); } 50% { transform: rotateX(-90deg); } 100% { transform: rotateX(0deg); } }
         
-        /* Прыжок при победе */
         .tile.jump { animation: jump 0.5s ease-in-out; }
         @keyframes jump { 0% { transform: translateY(0); } 50% { transform: translateY(-20px); } 100% { transform: translateY(0); } }
         
-        /* Состояния */
         .tile[data-state="tbd"] { border-color: #565758; }
         .tile[data-state="absent"] { background-color: #3a3a3c; border-color: #3a3a3c; }
         .tile[data-state="present"] { background-color: #b59f3b; border-color: #b59f3b; }
