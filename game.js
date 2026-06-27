@@ -1,6 +1,6 @@
 // --- ИНИЦИАЛИЗАЦИЯ И ПОДКЛЮЧЕНИЕ К СЕРВЕРУ ---
 // Подключаемся к твоему локальному Node.js серверу
-const socket = io('http://localhost:3000');
+const socket = io('https://wordle-4efr.onrender.com');
 let currentRoomId = null;
 
 const MAX_ATTEMPTS = 6;
