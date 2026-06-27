@@ -46,6 +46,15 @@ socket.on('error', (msg) => {
     showMessage(msg);
 });
 
+socket.on('invalidWord', () => {
+    showMessage("Такого слова нет");
+    const rowEl = document.querySelectorAll('.row')[currentRow];
+    if (rowEl) {
+        rowEl.classList.add('shake');
+        setTimeout(() => rowEl.classList.remove('shake'), 500);
+    }
+});
+
 if (localStorage.getItem("theme") === "light") {
     document.body.classList.add("light-mode");
     themeToggle.textContent = "🌙";
@@ -164,13 +173,6 @@ function checkRow() {
     socket.emit('submitGuess', { roomId: currentRoomId, guess });
 }
 
-socket.on('invalidWord', () => {
-    showMessage("Такого слова нет");
-    const rowEl = document.querySelectorAll('.row')[currentRow];
-    rowEl.classList.add('shake');
-    setTimeout(() => rowEl.classList.remove('shake'), 500);
-});
-
 socket.on('guessResult', ({ statuses, isWon, isLost, secretWord }) => {
     const guessLetters = guesses[currentRow];
 
@@ -207,7 +209,8 @@ socket.on('guessResult', ({ statuses, isWon, isLost, secretWord }) => {
 
 function updateOpponentsBoards(players) {
     const container = document.getElementById("opponents-containers");
-    container.innerHTML = ""; // Очищаем старые мини-сетки
+    if (!container) return;
+    container.innerHTML = "";
 
     for (const id in players) {
         if (id === socket.id) continue;
@@ -270,4 +273,3 @@ restartBtn.addEventListener("click", () => {
 });
 
 resetGameLocal();
-

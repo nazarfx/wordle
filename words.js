@@ -1,4 +1,4 @@
-// Все слова для проверки ввода (26490 слов)
+// Все слова для проверки ввода и загадывания (26490 слов)
 const WORDLE_DICTIONARY = [
   "абаза",
   "абазе",
@@ -26492,7 +26492,7 @@ const WORDLE_DICTIONARY = [
   "ёршик"
 ];
 
-// Теперь сервер будет выбирать из ВСЕХ пятибуквенных слов, что есть в файле russian.txt
+// Мощная база из всех доступных пятибуквенных слов
 const WORDLE_SECRET_WORDS = [
   "абаза",
   "абазе",
@@ -52986,7 +52986,7 @@ const WORDLE_SECRET_WORDS = [
   "ёршик"
 ];
 
-// Экспорт для Node.js бэкенда, чтобы сервер видел этот массив
+// Экспорт для Node.js бэкенда
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { WORDLE_SECRET_WORDS };
 }

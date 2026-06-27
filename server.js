@@ -1,13 +1,14 @@
 const express = require('express');
 const app = express();
+const http = require('http');
+const server = http.createServer(app);
+const { Server } = require('socket.io');
+
 app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
 });
-const http = require('http');
-const server = http.createServer(app);
-const { Server } = require('socket.io');
 
 const io = new Server(server, {
     cors: {
@@ -15,7 +16,7 @@ const io = new Server(server, {
     }
 });
 
-const { WORDLE_SECRET_WORDS } = require('./words.js');
+const { WORDLE_DICTIONARY, WORDLE_SECRET_WORDS } = require('./words.js');
 
 const rooms = {};
 
@@ -24,7 +25,6 @@ io.on('connection', (socket) => {
 
     socket.on('createRoom', () => {
         const roomId = Math.random().toString(36).substring(2, 6).toUpperCase();
-
         const randomWord = WORDLE_SECRET_WORDS[Math.floor(Math.random() * WORDLE_SECRET_WORDS.length)];
         const secretWord = randomWord.toLowerCase().replace(/ё/g, 'е');
 
@@ -34,36 +34,18 @@ io.on('connection', (socket) => {
         };
 
         socket.join(roomId);
-
-        rooms[roomId].players[socket.id] = {
-            id: socket.id,
-            progress: [],
-            currentAttempt: 0,
-            score: 'playing'
-        };
-
+        rooms[roomId].players[socket.id] = { id: socket.id, progress: [], currentAttempt: 0, score: 'playing' };
         socket.emit('roomCreated', { roomId });
     });
 
     socket.on('joinRoom', (roomId) => {
         roomId = roomId.toUpperCase().trim();
-
         if (rooms[roomId]) {
             socket.join(roomId);
-
-            rooms[roomId].players[socket.id] = {
-                id: socket.id,
-                progress: [],
-                currentAttempt: 0,
-                score: 'playing'
-            };
-
-            io.to(roomId).emit('roomUpdated', {
-                roomId,
-                players: rooms[roomId].players
-            });
+            rooms[roomId].players[socket.id] = { id: socket.id, progress: [], currentAttempt: 0, score: 'playing' };
+            io.to(roomId).emit('roomUpdated', { roomId, players: rooms[roomId].players });
         } else {
-            socket.emit('error', 'Комната не найдена! Проверьте код.');
+            socket.emit('error', 'Комната не найдена!');
         }
     });
 
@@ -72,6 +54,12 @@ io.on('connection', (socket) => {
         if (!room) return;
 
         const guessClean = guess.toLowerCase().replace(/ё/g, 'е');
+
+
+        if (!WORDLE_DICTIONARY.includes(guessClean)) {
+            socket.emit('invalidWord', 'Такого слова нет в словаре!');
+            return;
+        }
 
         const secretLetters = room.secretWord.split("");
         const guessLetters = guessClean.split("");
@@ -116,12 +104,9 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnect', () => {
-        console.log(`Пользователь отключился: ${socket.id}`);
-
         for (const roomId in rooms) {
             if (rooms[roomId].players[socket.id]) {
                 delete rooms[roomId].players[socket.id];
-
                 if (Object.keys(rooms[roomId].players).length === 0) {
                     delete rooms[roomId];
                 } else {
@@ -133,8 +118,6 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 3000;
-
 server.listen(PORT, () => {
-    console.log(`=== СЕРВЕР МУЛЬТИПЛЕЕРА УСПЕШНО ЗАПУЩЕН ===`);
-    console.log(`Слушаю порт: ${PORT}`);
+    console.log(`Сервер запущен на порту: ${PORT}`);
 });
