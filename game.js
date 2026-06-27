@@ -47,8 +47,8 @@ socket.on('roomUpdated', ({ roomId, players }) => {
 
 socket.emit('createRoom');
 
-// Выбираем случайное слово из всех 4319 слов прямо на фронтенде
-const randomSecretWord = WORDLE_SECRET_WORDS[Math.floor(Math.random() * WORDLE_SECRET_WORDS.length)];
+// Выбираем случайное слово из WORDLE_DICTIONARY
+const randomSecretWord = WORDLE_DICTIONARY[Math.floor(Math.random() * WORDLE_DICTIONARY.length)];
 
 // Отправляем его на сервер при создании комнаты
 socket.emit('createRoom', { secretWord: randomSecretWord });
