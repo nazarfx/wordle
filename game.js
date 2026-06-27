@@ -18,9 +18,7 @@ const KEYBOARD_LAYOUT = [
 ];
 
 document.getElementById('create-room-btn').addEventListener('click', () => {
-    // Выбираем случайное слово из нашего словаря на 4319 слов
     const randomSecretWord = WORDLE_DICTIONARY[Math.floor(Math.random() * WORDLE_DICTIONARY.length)];
-    // Отправляем его на сервер
     socket.emit('createRoom', { secretWord: randomSecretWord });
 });
 
@@ -229,22 +227,19 @@ socket.on('guessResult', ({ statuses, isWon, isLost, secretWord }) => {
 
 function updateOpponentsBoards(players) {
     const container = document.getElementById("opponents-containers");
-    container.innerHTML = ""; // Очищаем старые мини-сетки
+    container.innerHTML = "";
 
     for (const id in players) {
-        // Мы не рисуем собственное поле в блоке противников
         if (id === socket.id) continue;
 
         const player = players[id];
 
-        // Создаем контейнер для одного друга
         const opponentDiv = document.createElement("div");
         opponentDiv.className = "opponent-board-wrapper";
         opponentDiv.style.display = "flex";
         opponentDiv.style.flexDirection = "column";
         opponentDiv.style.alignItems = "center";
 
-        // Заголовок с ID или именем друга
         const title = document.createElement("div");
         title.style.fontSize = "0.8rem";
         title.style.marginBottom = "5px";
@@ -256,7 +251,6 @@ function updateOpponentsBoards(players) {
 
         opponentDiv.appendChild(title);
 
-        // Строим сетку 6х5 из маленьких квадратиков (как превью)
         const miniBoard = document.createElement("div");
         miniBoard.style.display = "grid";
         miniBoard.style.gridTemplateRows = "repeat(6, 1fr)";
@@ -274,7 +268,6 @@ function updateOpponentsBoards(players) {
                 miniTile.style.height = "15px";
                 miniTile.style.border = "1px solid #3a3a3c";
 
-                // Если у игрока есть статус для этой плитки, красим её
                 if (player.progress[i] && player.progress[i][j]) {
                     const state = player.progress[i][j];
                     if (state === "correct") miniTile.style.backgroundColor = "#538d4e";
@@ -293,7 +286,6 @@ function updateOpponentsBoards(players) {
 }
 
 restartBtn.addEventListener("click", () => {
-    // При рестарте также генерируем новое случайное слово
     const nextWord = WORDLE_DICTIONARY[Math.floor(Math.random() * WORDLE_DICTIONARY.length)];
     socket.emit('createRoom', { secretWord: nextWord });
 });

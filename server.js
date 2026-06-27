@@ -24,7 +24,6 @@ io.on('connection', (socket) => {
     socket.on('createRoom', (data) => {
         const roomId = Math.random().toString(36).substring(2, 6).toUpperCase();
 
-        // Если фронтенд передал слово, берем его. Если нет — используем дефолтную заглушку
         let secretWord = (data && data.secretWord) ? data.secretWord : "столб";
         secretWord = secretWord.toLowerCase().replace(/ё/g, 'е');
 
