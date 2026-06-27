@@ -4,51 +4,36 @@ const path = require('path');
 const inputPath = path.join(__dirname, 'russian.txt');
 const outputPath = path.join(__dirname, 'words.js');
 
-function parseRussianTxt(rawData) {
-    const allWords = rawData.split(/\r?\n/);
-    const filtered = [];
-    for (let word of allWords) {
-        if (!word) continue;
-        let clean = word.replace(/[\s\x00-\x1F\x7F-\x9F\xAD]/g, '').toLowerCase().replace(/[^а-яё]/g, '');
-        if (clean.length === 5) filtered.push(clean);
-    }
-    return [...new Set(filtered)].sort();
-}
-
 try {
-    console.log('Шаг 1: Анализируем локальный файл russian.txt...');
-    let data = fs.readFileSync(inputPath, 'utf-8');
-    let all5LetterWords = parseRussianTxt(data);
+    const data = fs.readFileSync(inputPath, 'utf-8');
+    const allWords = data.split(/\r?\n/);
 
-    if (all5LetterWords.length === 0) {
-        console.log('Переключаю кодировку на Windows-1251...');
-        const buffer = fs.readFileSync(inputPath);
-        data = new TextDecoder('windows-1251').decode(buffer);
-        all5LetterWords = parseRussianTxt(data);
+    console.log(`Всего строк в исходном файле: ${allWords.length}`);
+
+    // Посмотрим на первые 5 строк из файла, чтобы понять, в каком они виде
+    console.log("Первые 5 строк для теста:", JSON.stringify(allWords.slice(0, 5)));
+
+    const all5LetterWords = [];
+
+    for (let word of allWords) {
+        // Убираем любые скрытые пробельные символы по бокам
+        let cleanWord = word.replace(/\s+/g, '').toLowerCase().replace(/ё/g, 'е');
+
+        // Оставляем только длину 5 (без жесткой проверки регуляркой)
+        if (cleanWord.length === 5) {
+            all5LetterWords.push(cleanWord);
+        }
     }
 
-    console.log('Шаг 2: Формируем финальный файл со словами...');
+    const uniqueWords = [...new Set(all5LetterWords)];
 
-    const fileContent = `// Все слова для проверки ввода и загадывания (26490 слов)
-const WORDLE_DICTIONARY = ${JSON.stringify(all5LetterWords, null, 2)};
-
-// Мощная база из всех доступных пятибуквенных слов
-const WORDLE_SECRET_WORDS = ${JSON.stringify(all5LetterWords, null, 2)};
-
-// Экспорт для Node.js бэкенда
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { WORDLE_SECRET_WORDS };
-}
-`;
+    const fileContent = `const WORDLE_DICTIONARY = ${JSON.stringify(uniqueWords)};\nconst WORDLE_SECRET_WORDS = WORDLE_DICTIONARY;\n`;
 
     fs.writeFileSync(outputPath, fileContent, 'utf-8');
-
-    console.log(`\n===================================`);
-    console.log(` СЛОВАРЬ ИДЕАЛЬНО НАСТРОЕН!`);
-    console.log(`Всего чистых слов из 5 букв: ${all5LetterWords.length}`);
     console.log(`===================================`);
-    console.log(`Примеры загадок: ${all5LetterWords.slice(100, 105).join(', ')}`);
+    console.log(` УСПЕШНО СОЗДАНО СЛОВ: ${uniqueWords.length}`);
+    console.log(`===================================`);
 
-} catch (e) {
-    console.error('Ошибка:', e.message);
+} catch (err) {
+    console.error("Ошибка при генерации:", err);
 }
