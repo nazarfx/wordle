@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вордли на русском</title>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: #121213; color: white; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px; transition: background-color 0.3s; }
+        
+        /* Светлая тема */
+        body.light-mode { background-color: #ffffff; color: #121213; }
+        body.light-mode .tile { border-color: #d3d6da; color: #121213; }
+        body.light-mode .key { background-color: #d3d6da; color: #121213; }
+        body.light-mode #message { background-color: #121213; color: white; }
+
+        header { border-bottom: 1px solid #3a3a3c; width: 100%; max-width: 500px; text-align: center; padding-bottom: 10px; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; position: relative; }
+        h1 { font-size: 2.2rem; letter-spacing: 2px; margin-bottom: 10px; }
+        
+        #restart-btn { display: none; background-color: #538d4e; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.9rem; }
+        
+        /* Кнопка темы */
+        #theme-toggle { position: absolute; right: 0; top: 0; background: none; border: none; cursor: pointer; font-size: 1.5rem; }
+
+        #game-board { display: grid; grid-template-rows: repeat(6, 1fr); grid-gap: 5px; margin-bottom: 30px; width: 330px; height: 400px; }
+        .row { display: grid; grid-template-columns: repeat(5, 1fr); grid-gap: 5px; }
+        .tile { border: 2px solid #3a3a3c; min-width: 60px; min-height: 60px; display: flex; justify-content: center; align-items: center; font-size: 2rem; font-weight: bold; text-transform: uppercase; user-select: none; }
+        
+        /* --- АНИМАЦИИ --- */
+        .tile.pop { animation: pop 0.1s ease-in-out; }
+        @keyframes pop { 0% { transform: scale(0.8); } 40% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        
+        .row.shake { animation: shake 0.5s ease-in-out; }
+        @keyframes shake { 10%, 90% { transform: translateX(-2px); } 20%, 80% { transform: translateX(4px); } 30%, 50%, 70% { transform: translateX(-6px); } 40%, 60% { transform: translateX(6px); } }
+        
+        .tile.flip { animation: flip 0.6s ease-in forwards; }
+        @keyframes flip { 0% { transform: rotateX(0deg); } 50% { transform: rotateX(-90deg); } 100% { transform: rotateX(0deg); } }
+        
+        /* Прыжок при победе */
+        .tile.jump { animation: jump 0.5s ease-in-out; }
+        @keyframes jump { 0% { transform: translateY(0); } 50% { transform: translateY(-20px); } 100% { transform: translateY(0); } }
+        
+        /* Состояния */
+        .tile[data-state="tbd"] { border-color: #565758; }
+        .tile[data-state="absent"] { background-color: #3a3a3c; border-color: #3a3a3c; }
+        .tile[data-state="present"] { background-color: #b59f3b; border-color: #b59f3b; }
+        .tile[data-state="correct"] { background-color: #538d4e; border-color: #538d4e; }
+        
+        #keyboard { display: flex; flex-direction: column; width: 100%; max-width: 500px; grid-gap: 8px; }
+        .keyboard-row { display: flex; justify-content: center; width: 100%; grid-gap: 6px; }
+        .key { background-color: #818384; border: 0; border-radius: 4px; height: 58px; color: white; font-weight: bold; font-size: 1.25rem; display: flex; justify-content: center; align-items: center; cursor: pointer; user-select: none; flex: 1; text-transform: uppercase; }
+        .key.large { flex: 1.5; font-size: 0.9rem; }
+        .key[data-state="correct"] { background-color: #538d4e; }
+        .key[data-state="present"] { background-color: #b59f3b; }
+        .key[data-state="absent"] { background-color: #3a3a3c; }
+        #message { position: fixed; top: 10%; background-color: white; color: black; padding: 10px 20px; border-radius: 5px; font-weight: bold; z-index: 10; display: none; }
+    </style>
+</head>
+<body>
+
+<div id="lobby-container" style="margin-bottom: 20px; display: flex; gap: 10px;">
+    <button id="create-room-btn" style="background: #538d4e; color: white; padding: 10px; border: 0; font-weight: bold; cursor: pointer;">Создать комнату</button>
+    <input type="text" id="room-input" placeholder="Код комнаты" style="padding: 10px; border: 1px solid #3a3a3c; background: #222; color: white;">
+    <button id="join-room-btn" style="background: #818384; color: white; padding: 10px; border: 0; font-weight: bold; cursor: pointer;">Войти</button>
+</div>
+<div id="room-info" style="font-weight: bold; margin-bottom: 10px;"></div>
+
+<div id="opponents-containers" style="display: flex; gap: 20px; margin-top: 20px;"></div>
+
+    <header>
+        <button id="theme-toggle">☀️</button>
+        <h1>ВОРДЛИ</h1>
+        <button id="restart-btn">Играть заново</button>
+    </header>
+
+    <div id="message"></div>
+    <div id="game-board"></div>
+    <div id="keyboard"></div>
+
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+    <script src="words.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
