@@ -1,5 +1,3 @@
-// --- ИНИЦИАЛИЗАЦИЯ И ПОДКЛЮЧЕНИЕ К СЕРВЕРУ ---
-// Подключаемся к твоему локальному Node.js серверу
 const socket = io('https://wordle-4efr.onrender.com');
 let currentRoomId = null;
 
@@ -33,21 +31,18 @@ document.getElementById('join-room-btn').addEventListener('click', () => {
     }
 });
 
-// Слушаем успешное создание комнаты
 socket.on('roomCreated', ({ roomId }) => {
     currentRoomId = roomId;
     document.getElementById('room-info').textContent = `Ваша комната: ${roomId}. Отправьте этот код друзьям!`;
     resetGameLocal();
 });
 
-// Слушаем обновления лобби (подключение друзей, их ходы)
 socket.on('roomUpdated', ({ roomId, players }) => {
     currentRoomId = roomId;
     document.getElementById('room-info').textContent = `Комната: ${roomId} | Игроков: ${Object.keys(players).length}`;
     updateOpponentsBoards(players);
 });
 
-// Если сервер вернул ошибку, что комнаты нет
 socket.on('error', (msg) => {
     showMessage(msg);
 });
@@ -65,7 +60,6 @@ themeToggle.addEventListener("click", () => {
     themeToggle.textContent = isLight ? "🌙" : "☀️";
 });
 
-// --- ОБРАБОТЧИК КЛАВИАТУРЫ SYSTEM ---
 document.addEventListener("keydown", (e) => {
     if (gameOver) return;
     const key = e.key.toLowerCase();
@@ -74,7 +68,6 @@ document.addEventListener("keydown", (e) => {
     else if (/^[а-яё]$/.test(key)) handleKeyPress(key.replace("ё", "е"));
 });
 
-// --- ФУНКЦИЯ СБРОСА ИГРЫ ---
 function resetGameLocal() {
     currentRow = 0;
     currentTile = 0;
@@ -137,7 +130,6 @@ function showMessage(text, duration = 2000) {
     if (duration > 0) setTimeout(() => messageEl.style.display = "none", duration);
 }
 
-// --- НАЖАТИЯ НА КЛАВИШИ ---
 function handleKeyPress(key) {
     if (gameOver) return;
 
@@ -165,7 +157,6 @@ function handleKeyPress(key) {
     }
 }
 
-// --- ОТПРАВКА СЛОВА НА СЕРВЕР ---
 function checkRow() {
     if (!currentRoomId) {
         showMessage("Сначала создайте комнату или войдите к другу!");
@@ -176,7 +167,6 @@ function checkRow() {
     socket.emit('submitGuess', { roomId: currentRoomId, guess });
 }
 
-// Сервер сообщает, что такого слова нет в словаре
 socket.on('invalidWord', () => {
     showMessage("Такого слова нет");
     const rowEl = document.querySelectorAll('.row')[currentRow];
@@ -184,7 +174,6 @@ socket.on('invalidWord', () => {
     setTimeout(() => rowEl.classList.remove('shake'), 500);
 });
 
-// Сервер возвращает результаты проверки букв для нашей строки
 socket.on('guessResult', ({ statuses, isWon, isLost, secretWord }) => {
     const guessLetters = guesses[currentRow];
 
@@ -219,7 +208,6 @@ socket.on('guessResult', ({ statuses, isWon, isLost, secretWord }) => {
     }
 });
 
-// --- ОТРИСОВКА МИНИ-ПОЛЕЙ СОПЕРНИКОВ ---
 function updateOpponentsBoards(players) {
     const container = document.getElementById("opponents-containers");
     container.innerHTML = ""; // Очищаем старые мини-сетки
@@ -230,14 +218,12 @@ function updateOpponentsBoards(players) {
 
         const player = players[id];
 
-        // Создаем контейнер для одного друга
         const opponentDiv = document.createElement("div");
         opponentDiv.className = "opponent-board-wrapper";
         opponentDiv.style.display = "flex";
         opponentDiv.style.flexDirection = "column";
         opponentDiv.style.alignItems = "center";
 
-        // Заголовок с ID или именем друга
         const title = document.createElement("div");
         title.style.fontSize = "0.8rem";
         title.style.marginBottom = "5px";
@@ -249,7 +235,6 @@ function updateOpponentsBoards(players) {
 
         opponentDiv.appendChild(title);
 
-        // Строим сетку 6х5 из маленьких квадратиков (как превью)
         const miniBoard = document.createElement("div");
         miniBoard.style.display = "grid";
         miniBoard.style.gridTemplateRows = "repeat(6, 1fr)";
@@ -267,7 +252,6 @@ function updateOpponentsBoards(players) {
                 miniTile.style.height = "15px";
                 miniTile.style.border = "1px solid #3a3a3c";
 
-                // Если у игрока есть статус для этой плитки, красим её
                 if (player.progress[i] && player.progress[i][j]) {
                     const state = player.progress[i][j];
                     if (state === "correct") miniTile.style.backgroundColor = "#538d4e";
@@ -285,221 +269,9 @@ function updateOpponentsBoards(players) {
     }
 }
 
-// При нажатии кнопки "Играть заново" просто отправляем запрос серверу на создание новой катки
 restartBtn.addEventListener("click", () => {
     socket.emit('createRoom');
 });
 
-// Изначально запускаем пустую болванку, пока пользователь не вошел в комнату
 resetGameLocal();
 
-
-
-
-
-
-// // --- ИНИЦИАЛИЗАЦИЯ ПЕРЕМЕННЫХ ---
-// const MAX_ATTEMPTS = 6;
-// const WORD_LENGTH = 5;
-// let secretWord, currentRow, currentTile, guesses, gameOver, keyStates;
-//
-// const board = document.getElementById("game-board");
-// const keyboard = document.getElementById("keyboard");
-// const messageEl = document.getElementById("message");
-// const restartBtn = document.getElementById("restart-btn");
-// const themeToggle = document.getElementById("theme-toggle");
-//
-// const KEYBOARD_LAYOUT = [
-//     ["й", "ц", "у", "к", "е", "н", "г", "ш", "щ", "з", "х", "ъ"],
-//     ["ф", "ы", "в", "а", "п", "р", "о", "л", "д", "ж", "э"],
-//     ["enter", "я", "ч", "с", "м", "и", "т", "ь", "б", "ю", "back"]
-// ];
-//
-// // --- ТЕМА ---
-// if (localStorage.getItem("theme") === "light") {
-//     document.body.classList.add("light-mode");
-//     themeToggle.textContent = "🌙";
-// }
-//
-// themeToggle.addEventListener("click", () => {
-//     document.body.classList.toggle("light-mode");
-//     const isLight = document.body.classList.contains("light-mode");
-//     localStorage.setItem("theme", isLight ? "light" : "dark");
-//     themeToggle.textContent = isLight ? "🌙" : "☀️";
-// });
-//
-// // --- ОБРАБОТЧИК КЛАВИАТУРЫ ---
-// document.addEventListener("keydown", (e) => {
-//     if (gameOver) return;
-//     const key = e.key.toLowerCase();
-//     if (key === "enter") handleKeyPress("enter");
-//     else if (key === "backspace") handleKeyPress("back");
-//     else if (/^[а-яё]$/.test(key)) handleKeyPress(key.replace("ё", "е"));
-// });
-//
-// // --- ФУНКЦИЯ ПОЛНОГО СБРОСА ---
-// function resetGame() {
-//     secretWord = WORDLE_SECRET_WORDS[Math.floor(Math.random() * WORDLE_SECRET_WORDS.length)].toLowerCase().replace(/ё/g, 'е');
-//     currentRow = 0;
-//     currentTile = 0;
-//     gameOver = false;
-//     guesses = Array(MAX_ATTEMPTS).fill("").map(() => Array(WORD_LENGTH).fill(""));
-//     keyStates = {}; // Сбрасываем цвета клавиатуры
-//
-//     board.innerHTML = "";
-//     keyboard.innerHTML = "";
-//     messageEl.style.display = "none";
-//     restartBtn.style.display = "none";
-//
-//     createBoard();
-//     createKeyboard();
-// }
-//
-// function createBoard() {
-//     for (let i = 0; i < MAX_ATTEMPTS; i++) {
-//         const row = document.createElement("div");
-//         row.className = "row";
-//         for (let j = 0; j < WORD_LENGTH; j++) {
-//             const tile = document.createElement("div");
-//             tile.className = "tile";
-//             tile.id = `tile-${i}-${j}`;
-//             row.appendChild(tile);
-//         }
-//         board.appendChild(row);
-//     }
-// }
-//
-// function createKeyboard() {
-//     KEYBOARD_LAYOUT.forEach(rowPattern => {
-//         const row = document.createElement("div");
-//         row.className = "keyboard-row";
-//         rowPattern.forEach(keyText => {
-//             const button = document.createElement("button");
-//             button.textContent = keyText;
-//             button.className = "key";
-//             button.id = `key-${keyText.toLowerCase()}`;
-//             if (keyText === "enter" || keyText === "back") button.classList.add("large");
-//             button.addEventListener("click", () => handleKeyPress(keyText.toLowerCase()));
-//             row.appendChild(button);
-//         });
-//         keyboard.appendChild(row);
-//     });
-// }
-//
-// // Обновление цветов кнопок
-// function updateKeyboardColors() {
-//     for (const letter in keyStates) {
-//         const keyBtn = document.getElementById(`key-${letter}`);
-//         if (keyBtn) {
-//             keyBtn.setAttribute("data-state", keyStates[letter]);
-//         }
-//     }
-// }
-//
-// function showMessage(text, duration = 2000) {
-//     messageEl.textContent = text;
-//     messageEl.style.display = "block";
-//     if (duration > 0) setTimeout(() => messageEl.style.display = "none", duration);
-// }
-//
-// // --- ЛОГИКА ИГРЫ ---
-// function handleKeyPress(key) {
-//     if (gameOver) return;
-//
-//     if (key === "back") {
-//         if (currentTile > 0) {
-//             currentTile--;
-//             guesses[currentRow][currentTile] = "";
-//             const tile = document.getElementById(`tile-${currentRow}-${currentTile}`);
-//             tile.textContent = "";
-//             tile.removeAttribute("data-state");
-//         }
-//     } else if (key === "enter") {
-//         if (currentTile === WORD_LENGTH) checkRow();
-//         else showMessage("Недостаточно букв");
-//     } else if (/^[а-я]$/.test(key)) {
-//         if (currentTile < WORD_LENGTH) {
-//             guesses[currentRow][currentTile] = key;
-//             const tile = document.getElementById(`tile-${currentRow}-${currentTile}`);
-//             tile.textContent = key;
-//             tile.setAttribute("data-state", "tbd");
-//             tile.classList.add('pop');
-//             setTimeout(() => tile.classList.remove('pop'), 100);
-//             currentTile++;
-//         }
-//     }
-// }
-//
-// function checkRow() {
-//     const guess = guesses[currentRow].join("");
-//     const isValid = WORDLE_DICTIONARY.some(w => w.toLowerCase().replace(/ё/g, 'е') === guess);
-//
-//     if (!isValid) {
-//         showMessage("Такого слова нет");
-//         const rowEl = document.querySelectorAll('.row')[currentRow];
-//         rowEl.classList.add('shake');
-//         setTimeout(() => rowEl.classList.remove('shake'), 500);
-//         return;
-//     }
-//
-//     const secretLetters = secretWord.split("");
-//     const guessLetters = guess.split("");
-//     const statuses = Array(WORD_LENGTH).fill("absent");
-//
-//     // Расчет статусов
-//     for (let i = 0; i < WORD_LENGTH; i++) {
-//         if (guessLetters[i] === secretLetters[i]) {
-//             statuses[i] = "correct";
-//             secretLetters[i] = null;
-//         }
-//     }
-//     for (let i = 0; i < WORD_LENGTH; i++) {
-//         if (statuses[i] === "correct") continue;
-//         const index = secretLetters.indexOf(guessLetters[i]);
-//         if (index !== -1) {
-//             statuses[i] = "present";
-//             secretLetters[index] = null;
-//         }
-//     }
-//
-//     // Применение статусов и обновление клавиатуры
-//     guessLetters.forEach((letter, i) => {
-//         const tile = document.getElementById(`tile-${currentRow}-${i}`);
-//
-//         // Обновление состояния клавиш (приоритет: correct > present > absent)
-//         if (statuses[i] !== "correct") {
-//             if (keyStates[letter] !== "correct") keyStates[letter] = statuses[i];
-//         } else {
-//             keyStates[letter] = "correct";
-//         }
-//
-//         setTimeout(() => {
-//             tile.classList.add('flip');
-//             tile.setAttribute("data-state", statuses[i]);
-//             updateKeyboardColors(); // Обновляем цвета после переворота
-//         }, i * 200);
-//     });
-//
-//     if (guess === secretWord) {
-//         gameOver = true;
-//         for (let i = 0; i < WORD_LENGTH; i++) {
-//             setTimeout(() => document.getElementById(`tile-${currentRow}-${i}`).classList.add('jump'), i * 150);
-//         }
-//         setTimeout(() => {
-//             showMessage("Победа! 🎉", 0);
-//             restartBtn.style.display = "block";
-//         }, 1200);
-//     } else if (currentRow === MAX_ATTEMPTS - 1) {
-//         gameOver = true;
-//         setTimeout(() => {
-//             showMessage(`Игра окончена: ${secretWord.toUpperCase()}`, 0);
-//             restartBtn.style.display = "block";
-//         }, 1200);
-//     } else {
-//         currentRow++;
-//         currentTile = 0;
-//     }
-// }
-//
-// restartBtn.addEventListener("click", resetGame);
-// resetGame();

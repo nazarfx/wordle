@@ -4,7 +4,6 @@ const path = require('path');
 const inputPath = path.join(__dirname, 'russian.txt');
 const outputPath = path.join(__dirname, 'words.js');
 
-// Ровно 1000 чистых пятибуквенных существительных в начальной форме
 const FINAL_1000_WORDS = [
     "абзац", "аборт", "аванс", "аврал", "автор", "агент", "агат", "агнец", "агония", "адепт", 
     "адрес", "адски", "азиат", "айва", "актер", "актив", "акция", "алмаз", "алтарь", "альфа", 
@@ -127,7 +126,6 @@ try {
 
     console.log('Шаг 2: Кросс-чекинг с ультимативной базой из 1000 существительных...');
 
-    // Оставляем только то, что на 100% совпало с твоим файлом
     const finalSecretWords = FINAL_1000_WORDS.map(w => w.toLowerCase().replace(/ё/g, 'е')).filter(w => {
         return all5LetterWords.some(orig => orig.replace(/ё/g, 'е') === w);
     });
