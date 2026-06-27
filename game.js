@@ -45,6 +45,14 @@ socket.on('roomUpdated', ({ roomId, players }) => {
     updateOpponentsBoards(players);
 });
 
+socket.emit('createRoom');
+
+// Выбираем случайное слово из всех 4319 слов прямо на фронтенде
+const randomSecretWord = WORDLE_SECRET_WORDS[Math.floor(Math.random() * WORDLE_SECRET_WORDS.length)];
+
+// Отправляем его на сервер при создании комнаты
+socket.emit('createRoom', { secretWord: randomSecretWord });
+
 // Если сервер вернул ошибку, что комнаты нет
 socket.on('error', (msg) => {
     showMessage(msg);

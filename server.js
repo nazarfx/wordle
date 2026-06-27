@@ -18,24 +18,25 @@ const io = new Server(server, {
 
 const rooms = {};
 
-// Базовый список слов для загадывания на бэкенде
-const defaultSecretWords = ["арбуз", "банан", "клоун", "столб", "пирог", "доска", "парус"];
-
 io.on('connection', (socket) => {
     console.log(`Пользователь подключился: ${socket.id}`);
 
-    socket.on('createRoom', () => {
+    socket.on('createRoom', (data) => {
         const roomId = Math.random().toString(36).substring(2, 6).toUpperCase();
-        const randomWord = defaultSecretWords[Math.floor(Math.random() * defaultSecretWords.length)];
+
+        // Если фронтенд передал слово, берем его. Если нет — используем дефолтную заглушку
+        let secretWord = (data && data.secretWord) ? data.secretWord : "столб";
+        secretWord = secretWord.toLowerCase().replace(/ё/g, 'е');
 
         rooms[roomId] = {
-            secretWord: randomWord,
+            secretWord: secretWord,
             players: {}
         };
 
         socket.join(roomId);
         rooms[roomId].players[socket.id] = { id: socket.id, progress: [], currentAttempt: 0, score: 'playing' };
         socket.emit('roomCreated', { roomId });
+        console.log(`[КОМНАТА ${roomId}] Создана. Загаданное слово: ${secretWord}`);
     });
 
     socket.on('joinRoom', (roomId) => {
