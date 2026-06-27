@@ -47,11 +47,6 @@ socket.on('roomUpdated', ({ roomId, players }) => {
 
 socket.emit('createRoom');
 
-// Выбираем случайное слово из WORDLE_DICTIONARY
-const randomSecretWord = WORDLE_DICTIONARY[Math.floor(Math.random() * WORDLE_DICTIONARY.length)];
-
-// Отправляем его на сервер при создании комнаты
-socket.emit('createRoom', { secretWord: randomSecretWord });
 
 // Если сервер вернул ошибку, что комнаты нет
 socket.on('error', (msg) => {
