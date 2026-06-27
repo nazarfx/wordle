@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const words = require('russian-words'); // Подключаем правильный пакет
+const words = require('russian-words');
 
 const outputPath = path.join(__dirname, 'words.js');
 
